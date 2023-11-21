@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"dagger.io/dagger"
 )
@@ -26,9 +27,11 @@ func run(ctx context.Context) error {
 
 	_, err = dc.Container(dagger.ContainerOpts{
 		Platform: "linux/amd64",
-	}).From("golang:1.21").
+	}).From("golang:1.21.4").
 		WithMountedDirectory("/src", rootDir).
 		WithWorkdir("/src").
+		// Bust any cache:
+		WithEnvVariable("CACHE_BUSTER", time.Now().Format(time.RFC3339Nano)).
 		WithExec([]string{"go", "build"}).
 		Sync(ctx)
 
